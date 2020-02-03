@@ -15,7 +15,7 @@ public class GamePreparingTest {
 
     @Before
     public void setUp() throws Exception {
-        game = new ChessGame();
+        game = ChessGame.initial();
     }
 
     @Test

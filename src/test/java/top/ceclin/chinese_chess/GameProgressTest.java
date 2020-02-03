@@ -15,7 +15,7 @@ public class GameProgressTest {
 
     @Before
     public void setUp() throws Exception {
-        game = new ChessGame();
+        game = ChessGame.initial();
         game.addPlayer(foo);
         game.addPlayer(bar);
         game.start();

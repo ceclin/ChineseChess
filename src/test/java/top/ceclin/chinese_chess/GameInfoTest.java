@@ -15,7 +15,7 @@ public class GameInfoTest {
 
     @Before
     public void setUp() throws Exception {
-        game = new ChessGame();
+        game = ChessGame.initial();
         game.addPlayer(foo);
         game.addPlayer(bar);
         game.start();
@@ -34,8 +34,31 @@ public class GameInfoTest {
         game.movePiece(ChessMove.parse("b2b9"));
         assertEquals("rCbakabnr/9/1c5c1/p1p1p1p2/8p/P8/2P1P1P1P/7C1/9/RNBAKABNR b - - 0 2",
                 game.getFEN());
+        game.movePiece(ChessMove.parse("a9b9"));
+        assertEquals("1rbakabnr/9/1c5c1/p1p1p1p2/8p/P8/2P1P1P1P/7C1/9/RNBAKABNR w - - 0 3",
+                game.getFEN());
+        game.retract();
+        assertEquals("rCbakabnr/9/1c5c1/p1p1p1p2/8p/P8/2P1P1P1P/7C1/9/RNBAKABNR b - - 0 2",
+                game.getFEN());
         game.retract();
         assertEquals("rnbakabnr/9/1c5c1/p1p1p1p2/8p/P8/2P1P1P1P/1C5C1/9/RNBAKABNR w - - 2 2",
                 game.getFEN());
+    }
+
+    @Test
+    public void history() {
+        assertEquals("", game.getHistory());
+        game.movePiece(ChessMove.parse("a3a4"));
+        assertEquals("a3a4", game.getHistory());
+        game.movePiece(ChessMove.parse("i6i5"));
+        assertEquals("a3a4 i6i5", game.getHistory());
+        game.movePiece(ChessMove.parse("b2b9"));
+        assertEquals("a3a4 i6i5 b2b9-n", game.getHistory());
+        game.movePiece(ChessMove.parse("a9b9"));
+        assertEquals("a3a4 i6i5 b2b9-n a9b9-C", game.getHistory());
+        game.retract();
+        assertEquals("a3a4 i6i5 b2b9-n", game.getHistory());
+        game.retract();
+        assertEquals("a3a4 i6i5", game.getHistory());
     }
 }

@@ -2,7 +2,48 @@ package top.ceclin.chinese_chess
 
 import top.ceclin.chinese_chess.exception.InvalidMoveException
 
-class ChessGame {
+class ChessGame private constructor() {
+
+    companion object {
+
+        @JvmStatic
+        fun initial(): ChessGame {
+            return ChessGame().apply {
+                board = Chessboard.initial()
+            }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun fromFEN(fen: String, history: String? = null): ChessGame {
+            return ChessGame().apply {
+                board = Chessboard.fromFEN(fen)
+                val steps = history?.split(" +") ?: emptyList()
+                for (step in steps) {
+                    record.addLast(
+                        ChessRecord.Item(
+                            ChessMove.parse(step.slice(0..3)),
+                            if (step.length == 6) board.makePieceFromCode(
+                                step[5],
+                                ChessPosition(step[2], step[3])
+                            ) else null
+                        )
+                    )
+                }
+                val str = fen.split(" +")
+                peacefulStepCount = str[4].toInt()
+                if (peacefulStepCount > steps.size) {
+                    basePeacefulStepCount = peacefulStepCount - steps.size
+                }
+                val next = if (str[1] == "b") 1 else 0
+                val round = str[5].toInt()
+                val recordSize = 2 * (round - 1) + next
+                if (recordSize > steps.size) {
+                    baseRecordSize = recordSize - steps.size
+                }
+            }
+        }
+    }
 
     var state: GameState = GameState.PREPARING
         private set
@@ -43,7 +84,17 @@ class ChessGame {
         state = GameState.IN_PROGRESS
     }
 
-    private val board: Chessboard = Chessboard.default()
+    private lateinit var board: Chessboard
+
+    /**
+     * The size of unknown part in history record.
+     */
+    private var baseRecordSize: Int = 0
+
+    /**
+     * The size of unknown peaceful moves in history.
+     */
+    private var basePeacefulStepCount: Int = 0
 
     private val record: ChessRecord = ChessRecord()
 
@@ -51,7 +102,7 @@ class ChessGame {
      * Get current count of rounds that are already completed.
      */
     val roundCount: Int
-        get() = record.size / 2
+        get() = (baseRecordSize + record.size) / 2
 
     var peacefulStepCount: Int = 0
         private set
@@ -59,7 +110,7 @@ class ChessGame {
     val nextPlayer: Player
         get() {
             check(state == GameState.IN_PROGRESS)
-            return when (record.size % 2) {
+            return when ((baseRecordSize + record.size) % 2) {
                 0 -> redPlayer
                 else -> blackPlayer
             } as Player
@@ -68,7 +119,7 @@ class ChessGame {
     fun movePiece(move: ChessMove) {
         check(state == GameState.IN_PROGRESS)
         val piece = board.ensureNotEmpty(move.from)
-        if (piece.isBlack == (record.size % 2 == 0))
+        if (piece.isBlack == ((baseRecordSize + record.size) % 2 == 0))
             throw InvalidMoveException(move)
         val eaten = piece.moveTo(move.to)
         record.addLast(ChessRecord.Item(move, eaten))
@@ -108,8 +159,8 @@ class ChessGame {
                 }
             }
             // There is no record with non-null eaten piece.
-            if (peacefulStepCount == 0) {
-                peacefulStepCount = record.size
+            if (peacefulStepCount == 0 && record.lastOrNull()?.eaten == null) {
+                peacefulStepCount = basePeacefulStepCount + record.size
             }
         }
     }
@@ -146,5 +197,23 @@ class ChessGame {
             append(peacefulStepCount)
             append(' ')
             append(roundCount + 1)
+        }
+
+    val history: String
+        get() = buildString {
+            for ((index, step) in record.withIndex()) {
+                if (index > 0)
+                    append(' ')
+                step.move.let {
+                    append(it.from.x)
+                    append(it.from.y)
+                    append(it.to.x)
+                    append(it.to.y)
+                }
+                step.eaten?.let {
+                    append('-')
+                    append(it.code)
+                }
+            }
         }
 }

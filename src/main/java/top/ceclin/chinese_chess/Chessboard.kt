@@ -3,8 +3,8 @@ package top.ceclin.chinese_chess
 import top.ceclin.chinese_chess.exception.InvalidMoveException
 import top.ceclin.chinese_chess.exception.PieceNotFoundException
 import java.lang.Error
-import java.lang.UnsupportedOperationException
 import kotlin.IllegalArgumentException
+import kotlin.UnsupportedOperationException
 import kotlin.math.absoluteValue
 
 /**
@@ -13,7 +13,7 @@ import kotlin.math.absoluteValue
 internal class Chessboard private constructor() {
 
     companion object {
-        fun default(): Chessboard {
+        fun initial(): Chessboard {
             return Chessboard().apply {
                 placePiece(RookPiece(false, ChessPosition('a', '0')))
                 placePiece(RookPiece(false, ChessPosition('i', '0')))
@@ -50,9 +50,49 @@ internal class Chessboard private constructor() {
                 placePiece(PawnPiece(true, ChessPosition('i', '6')))
             }
         }
+
+        fun fromFEN(fen: String): Chessboard {
+            return Chessboard().apply {
+                val str = fen.split(" +").first()
+                str.split('/').forEachIndexed { index, line ->
+                    var x = 0
+                    for (c in line) {
+                        if (c.isDigit()) {
+                            for (i in 0 until c.toInt()) {
+                                board[x][9 - index] = EmptyPiece
+                                x++
+                            }
+                        } else {
+                            val pos = ChessPosition('a' + x, '0' + 9 - index)
+                            board[x][9 - index] = makePieceFromCode(c, pos)
+                            x++
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private val board: Array<Array<ChessPiece>> = Array(9) { Array(10) { EmptyPiece as ChessPiece } }
+
+    fun makePieceFromCode(code: Char, pos: ChessPosition) = when (code) {
+        'r' -> RookPiece(true, pos)
+        'R' -> RookPiece(false, pos)
+        'n' -> HorsePiece(true, pos)
+        'N' -> HorsePiece(false, pos)
+        'b' -> ElephantPiece(true, pos)
+        'B' -> ElephantPiece(false, pos)
+        'a' -> AdviserPiece(true, pos)
+        'A' -> AdviserPiece(false, pos)
+        'k' -> KingPiece(true, pos)
+        'K' -> KingPiece(false, pos)
+        'c' -> CannonPiece(true, pos)
+        'C' -> CannonPiece(false, pos)
+        'p' -> PawnPiece(true, pos)
+        'P' -> PawnPiece(false, pos)
+        else -> throw IllegalArgumentException("It is not a valid piece code: $code")
+    }
+
 
     fun toFEN(): String = buildString {
         var count = 0
@@ -120,6 +160,9 @@ internal class Chessboard private constructor() {
         override val isBlack: Boolean
             get() = throw UnsupportedOperationException()
 
+        override val code: Char
+            get() = throw UnsupportedOperationException()
+
         override val position: ChessPosition
             get() = throw UnsupportedOperationException()
 
@@ -175,6 +218,8 @@ internal class Chessboard private constructor() {
                 throw IllegalArgumentException("Invalid position $pos for King chess piece")
         }
 
+        override val code: Char = if (isBlack) 'k' else 'K'
+
         override fun moveTo(target: ChessPosition): ChessPiece? {
             if (position == target)
                 throw InvalidMoveException(ChessMove(position, target))
@@ -212,6 +257,8 @@ internal class Chessboard private constructor() {
             if (!valid(pos))
                 throw IllegalArgumentException("Invalid position $pos for Adviser chess piece")
         }
+
+        override val code: Char = if (isBlack) 'a' else 'A'
 
         override fun moveTo(target: ChessPosition): ChessPiece? {
             if (position == target || !valid(target))
@@ -252,6 +299,8 @@ internal class Chessboard private constructor() {
                 throw IllegalArgumentException("Invalid position $pos for Elephant chess piece")
         }
 
+        override val code: Char = if (isBlack) 'b' else 'B'
+
         override fun moveTo(target: ChessPosition): ChessPiece? {
             if (position == target || !valid(target))
                 throw InvalidMoveException(ChessMove(position, target))
@@ -276,6 +325,8 @@ internal class Chessboard private constructor() {
     }
 
     private inner class HorsePiece(isBlack: Boolean, pos: ChessPosition) : AbstractPiece(isBlack, pos) {
+
+        override val code: Char = if (isBlack) 'n' else 'N'
 
         override fun moveTo(target: ChessPosition): ChessPiece? {
             if (position == target)
@@ -309,6 +360,8 @@ internal class Chessboard private constructor() {
 
     private inner class RookPiece(isBlack: Boolean, pos: ChessPosition) : AbstractPiece(isBlack, pos) {
 
+        override val code: Char = if (isBlack) 'r' else 'R'
+
         override fun moveTo(target: ChessPosition): ChessPiece? {
             if (position == target)
                 throw InvalidMoveException(ChessMove(position, target))
@@ -334,6 +387,8 @@ internal class Chessboard private constructor() {
     }
 
     private inner class CannonPiece(isBlack: Boolean, pos: ChessPosition) : AbstractPiece(isBlack, pos) {
+
+        override val code: Char = if (isBlack) 'c' else 'C'
 
         override fun moveTo(target: ChessPosition): ChessPiece? {
             if (position == target)
@@ -362,6 +417,9 @@ internal class Chessboard private constructor() {
     }
 
     private inner class PawnPiece(isBlack: Boolean, pos: ChessPosition) : AbstractPiece(isBlack, pos) {
+
+        override val code: Char = if (isBlack) 'p' else 'P'
+
         override fun moveTo(target: ChessPosition): ChessPiece? {
             if (position == target)
                 throw InvalidMoveException(ChessMove(position, target))

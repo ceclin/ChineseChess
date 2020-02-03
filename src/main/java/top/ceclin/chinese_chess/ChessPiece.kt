@@ -13,6 +13,11 @@ internal interface ChessPiece {
     val isBlack: Boolean
 
     /**
+     * A character that shows what piece this instance is.
+     */
+    val code: Char
+
+    /**
      * Get the current position.
      */
     val position: ChessPosition
