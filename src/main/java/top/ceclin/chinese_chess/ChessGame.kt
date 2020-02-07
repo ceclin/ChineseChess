@@ -166,6 +166,15 @@ class ChessGame private constructor() {
         }
     }
 
+    fun tryMove(move: ChessMove): Boolean {
+        return try {
+            movePiece(move)
+            true
+        } catch (e: ChessException) {
+            false
+        }
+    }
+
     fun retract() {
         check(state == GameState.IN_PROGRESS)
         if (record.isEmpty())

@@ -36,6 +36,14 @@ public class GameRuleTest {
         assertFalse(game.isDraw());
     }
 
+    @Test
+    public void tryMove() {
+        assertFalse(game.tryMove(ChessMove.parse("a0a3")));
+        assertTrue(game.tryMove(ChessMove.parse("b2c2")));
+        assertTrue(game.tryMove(ChessMove.parse("i6i5")));
+        assertFalse(game.tryMove(ChessMove.parse("c2c9")));
+    }
+
     @Test(expected = InvalidMoveException.class)
     public void cannotEatPieceOfYourOwn() {
         game.movePiece(ChessMove.parse("a0a3"));
