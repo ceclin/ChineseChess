@@ -3,22 +3,15 @@ package top.ceclin.chinese_chess;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class GameInfoTest {
-
-    private final Player foo = new Player(1234);
-
-    private final Player bar = new Player(7890);
 
     private ChessGame game;
 
     @Before
     public void setUp() throws Exception {
         game = ChessGame.initial();
-        game.addPlayer(foo);
-        game.addPlayer(bar);
-        game.start();
     }
 
     @Test
@@ -65,14 +58,11 @@ public class GameInfoTest {
     @Test
     public void loadFEN() {
         ChessGame loaded = ChessGame.fromFEN("rnb1kabnr/4a4/1c5c1/p1p1C1p2/8p/9/P1P1P1P1P/7C1/9/RNBAKABNR w - - 1 3");
-        assertEquals(GameState.PREPARING, loaded.getState());
-        loaded.addBlackPlayer(foo);
-        loaded.addRedPlayer(bar);
-        loaded.start();
+        assertEquals(GameState.IN_PROGRESS, loaded.getState());
         loaded.movePiece(ChessMove.parse("e6e9"));
         assertEquals(GameState.FINISHED, loaded.getState());
-        assertEquals(loaded.getRedPlayer(), loaded.getWinner());
-        assertEquals(loaded.getBlackPlayer(), loaded.getLoser());
+        assertEquals(Player.RED, loaded.getWinner());
+        assertEquals(Player.BLACK, loaded.getLoser());
         ChessGame another = ChessGame.fromFEN(loaded.getFEN(), loaded.getHistory());
         assertEquals(GameState.FINISHED, another.getState());
     }
