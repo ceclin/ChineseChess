@@ -9,18 +9,11 @@ import static org.junit.Assert.*;
 // TODO: Write tests for all the Chinese Chess pieces.
 public class GameRuleTest {
 
-    private final Player foo = new Player(1234);
-
-    private final Player bar = new Player(7890);
-
     private ChessGame game;
 
     @Before
     public void setUp() throws Exception {
         game = ChessGame.initial();
-        game.addPlayer(foo);
-        game.addPlayer(bar);
-        game.start();
     }
 
     @Test
@@ -31,8 +24,8 @@ public class GameRuleTest {
         game.movePiece(ChessMove.parse("d9e8"));
         game.movePiece(ChessMove.parse("e6e9"));
         assertEquals(GameState.FINISHED, game.getState());
-        assertEquals(game.getRedPlayer(), game.getWinner());
-        assertEquals(game.getBlackPlayer(), game.getLoser());
+        assertEquals(Player.RED, game.getWinner());
+        assertEquals(Player.BLACK, game.getLoser());
         assertFalse(game.isDraw());
     }
 

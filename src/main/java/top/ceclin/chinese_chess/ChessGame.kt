@@ -2,7 +2,6 @@ package top.ceclin.chinese_chess
 
 import top.ceclin.chinese_chess.exception.InvalidMoveException
 
-// TODO: Improve class design about players.
 class ChessGame private constructor() {
 
     companion object {
@@ -51,65 +50,12 @@ class ChessGame private constructor() {
         }
     }
 
-    var state: GameState = GameState.PREPARING
+    var state: GameState = GameState.IN_PROGRESS
         private set
 
-    private val players = arrayOfNulls<Player>(2)
-
-    val playerCount: Int
-        get() = players.count { it != null }
-
-    var blackPlayer: Player?
-        get() = players[0]
-        private set(value) {
-            players[0] = value
-        }
-
-    var redPlayer: Player?
-        get() = players[1]
-        private set(value) {
-            players[1] = value
-        }
-
-    fun addPlayer(player: Player) {
-        check(state == GameState.PREPARING)
-        require(players.all { it == null || it.id != player.id }) { "Cannot add the same player twice" }
-        val index = players.indexOfFirst { it == null }
-        if (index == -1) {
-            throw IllegalStateException("Chinese-Chess cannot have more than 2 players")
-        }
-        players[index] = player
-    }
-
-    fun addBlackPlayer(player: Player) {
-        check(state == GameState.PREPARING)
-        require(players.all { it == null || it.id != player.id }) { "Cannot add the same player twice" }
-        check(blackPlayer == null) { "Black player already exists" }
-        blackPlayer = player
-    }
-
-    fun addRedPlayer(player: Player) {
-        check(state == GameState.PREPARING)
-        require(players.all { it == null || it.id != player.id }) { "Cannot add the same player twice" }
-        check(redPlayer == null) { "Red player already exists" }
-        redPlayer = player
-    }
-
-    fun exchangePlayers() {
-        check(state == GameState.PREPARING)
-        players[0] = players[1].also {
-            players[1] = players[0]
-        }
-    }
-
-    fun start() {
-        check(state == GameState.PREPARING)
-        if (playerCount != 2) {
-            throw  IllegalStateException("Chinese-Chess should have 2 players to play")
-        }
-        state = GameState.IN_PROGRESS
-    }
-
+    /**
+     * It should be init in factory methods.
+     */
     private lateinit var board: Chessboard
 
     /**
@@ -134,12 +80,9 @@ class ChessGame private constructor() {
         private set
 
     val nextPlayer: Player
-        get() {
-            check(state != GameState.PREPARING)
-            return when ((baseRecordSize + record.size) % 2) {
-                0 -> redPlayer
-                else -> blackPlayer
-            } as Player
+        get() = when ((baseRecordSize + record.size) % 2) {
+            0 -> Player.RED
+            else -> Player.BLACK
         }
 
     fun movePiece(move: ChessMove) {
@@ -156,11 +99,11 @@ class ChessGame private constructor() {
         }
         if (eaten is Chessboard.KingPiece) {
             if (eaten.isBlack) {
-                loser = blackPlayer
-                winner = redPlayer
+                loser = Player.BLACK
+                winner = Player.RED
             } else {
-                loser = redPlayer
-                winner = blackPlayer
+                loser = Player.RED
+                winner = Player.BLACK
             }
             state = GameState.FINISHED
         }
@@ -206,9 +149,9 @@ class ChessGame private constructor() {
             check(state == GameState.FINISHED)
             return if (field == null && !isDraw)
                 when ((baseRecordSize + record.size) % 2) {
-                    1 -> redPlayer
-                    else -> blackPlayer
-                } as Player
+                    1 -> Player.RED
+                    else -> Player.BLACK
+                }
             else field
         }
 
@@ -219,11 +162,18 @@ class ChessGame private constructor() {
             return if (field == null && !isDraw) nextPlayer else field
         }
 
-    fun resign(playerId: Long) {
+    fun resign(player: Player) {
         check(state == GameState.IN_PROGRESS)
-        val p = players.partition { (it as Player).id == playerId }
-        loser = p.first.single()
-        winner = p.second.single()
+        when (player) {
+            Player.RED -> {
+                loser = Player.RED
+                winner = Player.BLACK
+            }
+            Player.BLACK -> {
+                loser = Player.BLACK
+                winner = Player.RED
+            }
+        }
         state = GameState.FINISHED
     }
 
@@ -240,7 +190,7 @@ class ChessGame private constructor() {
         get() = buildString {
             append(board.toFEN())
             append(' ')
-            append(if (nextPlayer == blackPlayer) 'b' else 'w')
+            append(if (nextPlayer == Player.BLACK) 'b' else 'w')
             append(" - - ")
             append(peacefulStepCount)
             append(' ')

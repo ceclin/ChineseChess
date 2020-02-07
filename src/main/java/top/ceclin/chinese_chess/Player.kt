@@ -1,3 +1,3 @@
 package top.ceclin.chinese_chess
 
-data class Player(val id: Long)
+enum class Player { RED, BLACK }
