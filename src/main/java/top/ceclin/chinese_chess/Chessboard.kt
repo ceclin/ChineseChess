@@ -53,12 +53,12 @@ internal class Chessboard private constructor() {
 
         fun fromFEN(fen: String): Chessboard {
             return Chessboard().apply {
-                val str = fen.split(" +").first()
+                val str = fen.split(' ', limit = 2).first()
                 str.split('/').forEachIndexed { index, line ->
                     var x = 0
                     for (c in line) {
                         if (c.isDigit()) {
-                            for (i in 0 until c.toInt()) {
+                            for (i in 0 until Character.getNumericValue(c)) {
                                 board[x][9 - index] = EmptyPiece
                                 x++
                             }

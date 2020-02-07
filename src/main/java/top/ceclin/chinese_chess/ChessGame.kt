@@ -18,7 +18,7 @@ class ChessGame private constructor() {
         fun fromFEN(fen: String, history: String? = null): ChessGame {
             return ChessGame().apply {
                 board = Chessboard.fromFEN(fen)
-                val steps = history?.split(" +") ?: emptyList()
+                val steps = history?.takeIf { it.isNotEmpty() }?.split(Regex(" +")) ?: emptyList()
                 for (step in steps) {
                     record.addLast(
                         ChessRecord.Item(
@@ -30,7 +30,7 @@ class ChessGame private constructor() {
                         )
                     )
                 }
-                val str = fen.split(" +")
+                val str = fen.split(Regex(" +"))
                 peacefulStepCount = str[4].toInt()
                 if (peacefulStepCount > steps.size) {
                     basePeacefulStepCount = peacefulStepCount - steps.size
@@ -109,7 +109,7 @@ class ChessGame private constructor() {
 
     val nextPlayer: Player
         get() {
-            check(state == GameState.IN_PROGRESS)
+            check(state != GameState.PREPARING)
             return when ((baseRecordSize + record.size) % 2) {
                 0 -> redPlayer
                 else -> blackPlayer
