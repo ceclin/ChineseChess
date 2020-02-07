@@ -61,4 +61,19 @@ public class GameInfoTest {
         game.retract();
         assertEquals("a3a4 i6i5", game.getHistory());
     }
+
+    @Test
+    public void loadFEN() {
+        ChessGame loaded = ChessGame.fromFEN("rnb1kabnr/4a4/1c5c1/p1p1C1p2/8p/9/P1P1P1P1P/7C1/9/RNBAKABNR w - - 1 3");
+        assertEquals(GameState.PREPARING, loaded.getState());
+        loaded.addBlackPlayer(foo);
+        loaded.addRedPlayer(bar);
+        loaded.start();
+        loaded.movePiece(ChessMove.parse("e6e9"));
+        assertEquals(GameState.FINISHED, loaded.getState());
+        assertEquals(loaded.getRedPlayer(), loaded.getWinner());
+        assertEquals(loaded.getBlackPlayer(), loaded.getLoser());
+        ChessGame another = ChessGame.fromFEN(loaded.getFEN(), loaded.getHistory());
+        assertEquals(GameState.FINISHED, another.getState());
+    }
 }

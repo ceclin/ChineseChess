@@ -2,6 +2,7 @@ package top.ceclin.chinese_chess
 
 import top.ceclin.chinese_chess.exception.InvalidMoveException
 
+// TODO: Improve class design about players.
 class ChessGame private constructor() {
 
     companion object {
@@ -41,6 +42,11 @@ class ChessGame private constructor() {
                 if (recordSize > steps.size) {
                     baseRecordSize = recordSize - steps.size
                 }
+                val w = 'K' in str[0]
+                val b = 'k' in str[0]
+                require(w || b)
+                if (!w || !b)
+                    state = GameState.FINISHED
             }
         }
     }
@@ -53,11 +59,17 @@ class ChessGame private constructor() {
     val playerCount: Int
         get() = players.count { it != null }
 
-    val blackPlayer: Player?
+    var blackPlayer: Player?
         get() = players[0]
+        private set(value) {
+            players[0] = value
+        }
 
-    val redPlayer: Player?
+    var redPlayer: Player?
         get() = players[1]
+        private set(value) {
+            players[1] = value
+        }
 
     fun addPlayer(player: Player) {
         check(state == GameState.PREPARING)
@@ -67,6 +79,20 @@ class ChessGame private constructor() {
             throw IllegalStateException("Chinese-Chess cannot have more than 2 players")
         }
         players[index] = player
+    }
+
+    fun addBlackPlayer(player: Player) {
+        check(state == GameState.PREPARING)
+        require(players.all { it == null || it.id != player.id }) { "Cannot add the same player twice" }
+        check(blackPlayer == null) { "Black player already exists" }
+        blackPlayer = player
+    }
+
+    fun addRedPlayer(player: Player) {
+        check(state == GameState.PREPARING)
+        require(players.all { it == null || it.id != player.id }) { "Cannot add the same player twice" }
+        check(redPlayer == null) { "Red player already exists" }
+        redPlayer = player
     }
 
     fun exchangePlayers() {
@@ -167,9 +193,22 @@ class ChessGame private constructor() {
 
     var winner: Player? = null
         private set
+        get() {
+            check(state == GameState.FINISHED)
+            return if (field == null && !isDraw)
+                when ((baseRecordSize + record.size) % 2) {
+                    1 -> redPlayer
+                    else -> blackPlayer
+                } as Player
+            else field
+        }
 
     var loser: Player? = null
         private set
+        get() {
+            check(state == GameState.FINISHED)
+            return if (field == null && !isDraw) nextPlayer else field
+        }
 
     fun resign(playerId: Long) {
         check(state == GameState.IN_PROGRESS)
