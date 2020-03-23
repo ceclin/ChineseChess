@@ -2,9 +2,6 @@ package top.ceclin.chinese_chess
 
 import top.ceclin.chinese_chess.exception.InvalidMoveException
 import top.ceclin.chinese_chess.exception.PieceNotFoundException
-import java.lang.Error
-import kotlin.IllegalArgumentException
-import kotlin.UnsupportedOperationException
 import kotlin.math.absoluteValue
 
 /**
@@ -73,7 +70,7 @@ internal class Chessboard private constructor() {
         }
     }
 
-    private val board: Array<Array<ChessPiece>> = Array(9) { Array(10) { EmptyPiece as ChessPiece } }
+    private val board: Array<Array<ChessPiece>> = Array(9) { Array(10) { EmptyPiece } }
 
     fun makePieceFromCode(code: Char, pos: ChessPosition) = when (code) {
         'r' -> RookPiece(true, pos)
@@ -232,6 +229,11 @@ internal class Chessboard private constructor() {
             }
             if (diff != 1)
                 throw InvalidMoveException(ChessMove(position, target))
+            (if (isBlack) (target.y - 1) downTo '0' else (target.y + 1)..'9')
+                .map { ChessPosition(target.x, it).toCoordinate() }
+                .map { board[it.first][it.second] }
+                .firstOrNull { it != EmptyPiece }
+                ?.let { if (it is KingPiece) throw InvalidMoveException(ChessMove(position, target)) }
             return super.moveTo(target)
         }
     }
@@ -399,7 +401,7 @@ internal class Chessboard private constructor() {
                         if (position.y < target.y) (position.y + 1) until target.y
                         else (target.y + 1) until position.y
                     val count = range.map { isNotEmpty(ChessPosition(position.x, it)) }.count { it }
-                    if (!(count == 0 || count == 1 && isNotEmpty(target)))
+                    if (!(count == 0 && isEmpty(target) || count == 1 && isNotEmpty(target)))
                         throw InvalidMoveException(ChessMove(position, target))
                 }
                 position.y == target.y -> {
@@ -407,7 +409,7 @@ internal class Chessboard private constructor() {
                         if (position.x < target.x) (position.x + 1) until target.x
                         else (target.x + 1) until position.x
                     val count = range.map { isNotEmpty(ChessPosition(it, position.y)) }.count { it }
-                    if (!(count == 0 || count == 1 && isNotEmpty(target)))
+                    if (!(count == 0 && isEmpty(target) || count == 1 && isNotEmpty(target)))
                         throw InvalidMoveException(ChessMove(position, target))
                 }
                 else -> throw InvalidMoveException(ChessMove(position, target))

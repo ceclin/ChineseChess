@@ -64,6 +64,11 @@ public class GameRuleTest {
     }
 
     @Test(expected = InvalidMoveException.class)
+    public void invalidCannonMove3() {
+        game.movePiece(ChessMove.parse("b2b7"));
+    }
+
+    @Test(expected = InvalidMoveException.class)
     public void invalidPawnMove() {
         game.movePiece(ChessMove.parse("a3b3"));
     }
@@ -78,5 +83,13 @@ public class GameRuleTest {
         game.movePiece(ChessMove.parse("a3a4"));
         game.movePiece(ChessMove.parse("i6i5"));
         game.movePiece(ChessMove.parse("a4a3"));
+    }
+
+    @Test(expected = InvalidMoveException.class)
+    public void invalidKingMove() {
+        game.movePiece(ChessMove.parse("f0e1"));
+        game.movePiece(ChessMove.parse("f9e8"));
+        game.movePiece(ChessMove.parse("e0f0"));
+        game.movePiece(ChessMove.parse("e9f9"));
     }
 }
