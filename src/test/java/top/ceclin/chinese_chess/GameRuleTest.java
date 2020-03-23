@@ -92,4 +92,13 @@ public class GameRuleTest {
         game.movePiece(ChessMove.parse("e0f0"));
         game.movePiece(ChessMove.parse("e9f9"));
     }
+
+    @Test(expected = InvalidMoveException.class)
+    public void invalidKingMove2() {
+        game.movePiece(ChessMove.parse("e3e4"));
+        game.movePiece(ChessMove.parse("e6e5"));
+        game.movePiece(ChessMove.parse("e4e5"));
+        game.movePiece(ChessMove.parse("e9e8"));
+        game.movePiece(ChessMove.parse("e5f5"));
+    }
 }

@@ -208,6 +208,20 @@ internal class Chessboard private constructor() {
         }
     }
 
+    internal fun checkKingPieceBeforeMove(move: ChessMove) {
+        val pieces = (('0' until move.from.y) + ((move.from.y + 1)..'9'))
+            .map { ChessPosition(move.from.x, it).toCoordinate() }
+            .map { board[it.first][it.second] }
+            .filterNot { it == EmptyPiece }
+        var prev: ChessPiece? = null
+        for (p in pieces) {
+            if (prev is KingPiece && p is KingPiece) {
+                throw InvalidMoveException(move)
+            }
+            prev = p
+        }
+    }
+
     internal inner class KingPiece(isBlack: Boolean, pos: ChessPosition) : AbstractPiece(isBlack, pos) {
 
         private fun validX(pos: ChessPosition) = pos.x in 'd'..'f'
@@ -275,6 +289,7 @@ internal class Chessboard private constructor() {
             }
             if (!ok)
                 throw InvalidMoveException(ChessMove(position, target))
+            checkKingPieceBeforeMove(ChessMove(position, target))
             return super.moveTo(target)
         }
     }
@@ -326,6 +341,7 @@ internal class Chessboard private constructor() {
             )
             if (isNotEmpty(middle))
                 throw InvalidMoveException(ChessMove(position, target))
+            checkKingPieceBeforeMove(ChessMove(position, target))
             return super.moveTo(target)
         }
     }
@@ -360,6 +376,7 @@ internal class Chessboard private constructor() {
             }
             if (!ok)
                 throw InvalidMoveException(ChessMove(position, target))
+            checkKingPieceBeforeMove(ChessMove(position, target))
             return super.moveTo(target)
         }
     }
@@ -388,6 +405,7 @@ internal class Chessboard private constructor() {
                 }
                 else -> throw InvalidMoveException(ChessMove(position, target))
             }
+            checkKingPieceBeforeMove(ChessMove(position, target))
             return super.moveTo(target)
         }
     }
@@ -418,6 +436,7 @@ internal class Chessboard private constructor() {
                 }
                 else -> throw InvalidMoveException(ChessMove(position, target))
             }
+            checkKingPieceBeforeMove(ChessMove(position, target))
             return super.moveTo(target)
         }
     }
@@ -445,6 +464,7 @@ internal class Chessboard private constructor() {
                 }
                 else -> throw InvalidMoveException(ChessMove(position, target))
             }
+            checkKingPieceBeforeMove(ChessMove(position, target))
             return super.moveTo(target)
         }
     }
