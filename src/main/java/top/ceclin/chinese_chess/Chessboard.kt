@@ -70,7 +70,11 @@ internal class Chessboard private constructor() {
         }
     }
 
-    private val board: Array<Array<ChessPiece>> = Array(9) { Array(10) { EmptyPiece } }
+    private val board: Array<Array<ChessPiece>> = Array(9) {
+        Array(10) {
+            EmptyPiece as ChessPiece // For Kotlin compiler
+        }
+    }
 
     fun makePieceFromCode(code: Char, pos: ChessPosition) = when (code) {
         'r' -> RookPiece(true, pos)
