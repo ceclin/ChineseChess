@@ -400,7 +400,7 @@ internal class Chessboard private constructor() {
                     val range =
                         if (position.y < target.y) (position.y + 1) until target.y
                         else (target.y + 1) until position.y
-                    val count = range.map { isNotEmpty(ChessPosition(position.x, it)) }.count { it }
+                    val count = range.count { isNotEmpty(ChessPosition(position.x, it)) }
                     if (!(count == 0 && isEmpty(target) || count == 1 && isNotEmpty(target)))
                         throw InvalidMoveException(ChessMove(position, target))
                 }
@@ -408,7 +408,7 @@ internal class Chessboard private constructor() {
                     val range =
                         if (position.x < target.x) (position.x + 1) until target.x
                         else (target.x + 1) until position.x
-                    val count = range.map { isNotEmpty(ChessPosition(it, position.y)) }.count { it }
+                    val count = range.count { isNotEmpty(ChessPosition(it, position.y)) }
                     if (!(count == 0 && isEmpty(target) || count == 1 && isNotEmpty(target)))
                         throw InvalidMoveException(ChessMove(position, target))
                 }
